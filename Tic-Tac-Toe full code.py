@@ -376,7 +376,7 @@ def train(main_net, opponent_net, learner, generations, games_per_generation, tr
         torch.set_grad_enabled(True)
         policy_loss_metric = nn.BCELoss()
         value_loss_metric = nn.MSELoss()
-        optimizer = torch.optim.Adam(main_net.parameters(), lr=0.003, weight_decay=1e-4)
+        optimizer = torch.optim.Adam(main_net.parameters(), lr=0.01, weight_decay=1e-4)
         for epoch in range(training_epochs):
             running_loss = 0
             for position, move_probs, value in train_data_loader:
@@ -392,7 +392,7 @@ def train(main_net, opponent_net, learner, generations, games_per_generation, tr
                 running_loss += loss.item()
             print(f"Training loss: {running_loss/len(train_data_loader)}")
         # evaluating model
-        win_counts = net_vs_net(Board(3, 3, 3, 1), main_net, opponent_net, 1000)
+        win_counts = net_vs_net(Board(learner.board_width, learner.board_height, learner.win_length, 1), main_net, opponent_net, 1000)
         print("")
         print(f"main_net wins: {win_counts[0]}")
         print(f"main_net losses: {win_counts[1]}")
@@ -405,7 +405,10 @@ def train(main_net, opponent_net, learner, generations, games_per_generation, tr
 
 
 
-main_net = Net(3, 3)
+main_net = Net(6, 6)
 # main_net.load_state_dict(torch.load("model.pt"))
-opponent_net = Net(3, 3)
-learner = RL(main_net, 3, 3, 3)
+opponent_net = Net(6, 6)
+learner = RL(main_net, 6, 6, 4)
+train(main_net, opponent_net, learner, 10, 50, 30)
+
+mcts_net_vs_human(Board(6, 6, 4), 0, main_net)
